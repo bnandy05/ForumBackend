@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\TopicsController;
 
 Route::middleware(['auth'])->group(function () {
     Route::controller(TopicsController::class)->group(function () {
