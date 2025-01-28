@@ -103,7 +103,7 @@ class ForumController extends Controller
 
         return response()->json(['message' => 'Vote recorded successfully']);
     }
-    
+
     public function voteComment(Request $request, $id)
     {
         $request->validate([
@@ -132,5 +132,55 @@ class ForumController extends Controller
         }
 
         return response()->json(['message' => 'Vote recorded successfully']);
+    }
+
+    public function deleteAdminTopic($id)
+    {
+        $topic = Topic::findOrFail($id);
+
+        if (Auth::user()->is_admin || Auth::id() === $topic->user_id) {
+            $topic->delete();
+            return response()->json(['message' => 'Topic deleted successfully']);
+        }
+
+        return response()->json(['message' => 'Unauthorized'], 403);
+    }
+
+    public function deleteAdminComment($id)
+    {
+        $comment = Comment::findOrFail($id);
+
+        if (Auth::user()->is_admin || Auth::id() === $comment->user_id) {
+            $comment->delete();
+            return response()->json(['message' => 'Comment deleted successfully']);
+        }
+
+        return response()->json(['message' => 'Unauthorized'], 403);
+    }
+    
+    public function deleteTopic($id)
+    {
+        $topic = Topic::findOrFail($id);
+
+        if ($topic->user_id !== Auth::id() && !Auth::user()->is_admin) {
+            return response()->json(['error' => 'Nincs jogosultságod törölni ezt a topikot.'], 403);
+        }
+
+        $topic->delete();
+
+        return response()->json(['success' => 'Topik sikeresen törölve.'], 200);
+    }
+
+    public function deleteComment($id)
+    {
+        $comment = Comment::findOrFail($id);
+
+        if ($comment->user_id !== Auth::id() && !Auth::user()->is_admin) {
+            return response()->json(['error' => 'Nincs jogosultságod törölni ezt a kommentet.'], 403);
+        }
+
+        $comment->delete();
+
+        return response()->json(['success' => 'Komment sikeresen törölve.'], 200);
     }
 }
