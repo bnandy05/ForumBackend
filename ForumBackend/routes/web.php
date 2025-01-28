@@ -1,10 +1,10 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\TopicsController;
+use App\Http\Controllers\ForumController;
 
 Route::middleware(['auth'])->group(function () {
-    Route::controller(TopicsController::class)->group(function () {
+    Route::controller(ForumController::class)->group(function () {
         Route::get('/', 'index')->name('forum.fooldal');
         
         Route::get('/feltoltes', 'createTopic')->name('forum.feltoltes');
