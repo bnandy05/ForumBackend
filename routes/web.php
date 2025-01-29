@@ -57,3 +57,4 @@ Route::post('/sanctum-test/login', [SanctumTestController::class, 'login'])->nam
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/sanctum-test/dashboard', [SanctumTestController::class, 'dashboard'])->name('sanctum.dashboard');
     Route::post('/sanctum-test/logout', [SanctumTestController::class, 'logout'])->name('sanctum.logout');
+});
