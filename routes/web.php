@@ -15,6 +15,12 @@ Route::middleware('sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+use App\Http\Controllers\SanctumTestController;
+Route::get('/sanctum/login', [SanctumTestController::class, 'showLoginForm'])->name('login');
+Route::post('/sanctum/login', [SanctumTestController::class, 'login']);
+Route::get('/sanctum/dashboard', [SanctumTestController::class, 'dashboard'])->middleware('auth:sanctum')->name('dashboard');
+Route::post('/sanctum/logout', [SanctumTestController::class, 'logout'])->middleware('auth:sanctum');
+
 Route::post('/register', [AuthController::class, 'Regisztralas']);
 Route::post('/login', [AuthController::class, 'Login']);
 Route::post('/logout', [AuthController::class, 'Logout']);
@@ -44,3 +50,10 @@ Route::middleware(['auth'])->group(function () {
         });  
     });
 });
+
+// Sanctum test routes
+Route::get('/sanctum', [SanctumTestController::class, 'showLoginForm'])->name('sanctum.login.form');
+Route::post('/sanctum-test/login', [SanctumTestController::class, 'login'])->name('sanctum.login');
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/sanctum-test/dashboard', [SanctumTestController::class, 'dashboard'])->name('sanctum.dashboard');
+    Route::post('/sanctum-test/logout', [SanctumTestController::class, 'logout'])->name('sanctum.logout');

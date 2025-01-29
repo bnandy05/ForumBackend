@@ -1,0 +1,1 @@
+<h1><?php echo e($vege); ?></h1><?php /**PATH /var/www/vhosts/moriczcloud.hu/berenandor.moriczcloud.hu/resources/views/shipment.blade.php ENDPATH**/ ?>
