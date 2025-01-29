@@ -2,6 +2,11 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ForumController;
+use App\Http\Controllers\AuthController;
+
+Route::middleware('sanctum')->get('/user', function (Request $request) {
+    return $request->user();
+});
 
 Route::middleware(['auth'])->group(function () {
     Route::controller(ForumController::class)->group(function () {

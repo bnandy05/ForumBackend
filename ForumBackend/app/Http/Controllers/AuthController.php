@@ -1,64 +1,58 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 
 class AuthController extends Controller
 {
-    public function Regisztralas(Request $request)
+    public function register(Request $request)
     {
-    $validated = $request->validate([
-        'name' => 'required|string|max:255',
-        'email' => 'required|string|email|max:255|unique:users',
-        'password' => 'required|string|min:8',
-    ]);
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8',
+        ]);
 
-    $user = \App\Models\User::create([
-        'name' => $validated['name'],
-        'email' => $validated['email'],
-        'password' => bcrypt($validated['password']),
-    ]);
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => bcrypt($validated['password']),
+        ]);
 
-    Auth::login($user);
+        // Token generálása
+        $token = $user->createToken('auth_token')->plainTextToken;
 
-    return redirect('/dashboard');
+        return response()->json(['token' => $token, 'user' => $user]);
     }
 
-    public function Regisztracio()
+    public function login(Request $request)
     {
-        return view('auth.regisztracio');
-    }
+        $credentials = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required'
+        ]);
 
-    public function Dashboard()
-    {
-        $user = Auth::user();
-        return view('dashboard', compact());
-    }
-
-    public function Login()
-    {
-        $credentials = $request->only('email','password');
-
-        if(Auth::attempt($credentials))
-        {
-            $request->session()->regenerate();
-            return redirect('/dashboard');
+        if (!Auth::attempt($credentials)) {
+            return response()->json(['message' => 'Hibás bejelentkezési adatok'], 401);
         }
 
-        return back()->withErrors([
-            'email' => 'A megadott hitelesítő adatok nem egyeznek.',
-        ]);
+        $user = Auth::user();
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json(['token' => $token, 'user' => $user]);
     }
 
-    public function Logout(Request $request)
+    public function logout(Request $request)
     {
-        Auth::logout();
+        $request->user()->tokens()->delete();
 
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-    
-        return redirect('/');
+        return response()->json(['message' => 'Sikeres kijelentkezés']);
+    }
+
+    public function user(Request $request)
+    {
+        return response()->json($request->user());
     }
 }
