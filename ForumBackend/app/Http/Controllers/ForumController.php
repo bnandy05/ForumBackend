@@ -56,7 +56,16 @@ class ForumController extends Controller
     public function show($id)
     {
         $topic = Topic::with(['comments.user', 'user', 'category'])->findOrFail($id);
-        return response()->json($topic);
+        
+        $userVote = null;
+        if (Auth::check()) {
+            $vote = TopicVote::where('topic_id', $id)
+                ->where('user_id', Auth::id())
+                ->first();
+            $userVote = $vote ? $vote->vote_type : null;
+        }
+
+        return response()->json(['topic' => $topic, 'user_vote' => $userVote]);
     }
 
     public function addComment(Request $request, $topicId)
@@ -80,25 +89,125 @@ class ForumController extends Controller
             'vote_type' => 'required|in:up,down',
         ]);
 
+        $userId = Auth::id();
         $existingVote = TopicVote::where('topic_id', $id)
-            ->where('user_id', Auth::id())
+            ->where('user_id', $userId)
             ->first();
 
+        $topic = Topic::findOrFail($id);
+
         if ($existingVote) {
-            return response()->json(['message' => 'You already voted on this topic'], 400);
+            if ($existingVote->vote_type === $request->vote_type) {
+                $existingVote->delete();
+                $request->vote_type === 'up' ? $topic->decrement('upvotes') : $topic->decrement('downvotes');
+                return response()->json(['message' => 'Vote removed successfully']);
+            }
+            $existingVote->update(['vote_type' => $request->vote_type]);
+            if ($request->vote_type === 'up') {
+                $topic->increment('upvotes');
+                $topic->decrement('downvotes');
+            } else {
+                $topic->increment('downvotes');
+                $topic->decrement('upvotes');
+            }
+        } else {
+            TopicVote::create([
+                'topic_id' => $id,
+                'user_id' => $userId,
+                'vote_type' => $request->vote_type,
+            ]);
+            $request->vote_type === 'up' ? $topic->increment('upvotes') : $topic->increment('downvotes');
         }
 
-        $vote = TopicVote::create([
-            'topic_id' => $id,
-            'user_id' => Auth::id(),
-            'vote_type' => $request->vote_type,
+        return response()->json(['message' => 'Vote recorded successfully']);
+    }
+
+    <?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Users;
+use App\Models\Category;
+use App\Models\Topic;
+use App\Models\Comment;
+use App\Models\TopicVote;
+use App\Models\CommentVote;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class ForumController extends Controller
+{
+    public function index(Request $request)
+    {
+        $query = Topic::query();
+
+        if ($request->has('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        if ($request->has('title')) {
+            $query->where('title', 'like', '%' . $request->title . '%');
+        }
+
+        if ($request->has('order_by') && $request->order_by === 'upvotes') {
+            $query->orderBy('upvotes', 'desc');
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
+
+        $topics = $query->with('user', 'category')->paginate(10);
+        return response()->json($topics);
+    }
+
+    public function show($id)
+    {
+        $topic = Topic::with(['comments.user', 'user', 'category'])->findOrFail($id);
+        
+        $userVote = null;
+        if (Auth::check()) {
+            $vote = TopicVote::where('topic_id', $id)
+                ->where('user_id', Auth::id())
+                ->first();
+            $userVote = $vote ? $vote->vote_type : null;
+        }
+
+        return response()->json(['topic' => $topic, 'user_vote' => $userVote]);
+    }
+
+    public function voteTopic(Request $request, $id)
+    {
+        $request->validate([
+            'vote_type' => 'required|in:up,down',
         ]);
 
+        $userId = Auth::id();
+        $existingVote = TopicVote::where('topic_id', $id)
+            ->where('user_id', $userId)
+            ->first();
+
         $topic = Topic::findOrFail($id);
-        if ($request->vote_type === 'up') {
-            $topic->increment('upvotes');
+
+        if ($existingVote) {
+            if ($existingVote->vote_type === $request->vote_type) {
+                $existingVote->delete();
+                $request->vote_type === 'up' ? $topic->decrement('upvotes') : $topic->decrement('downvotes');
+                return response()->json(['message' => 'Vote removed successfully']);
+            }
+            $existingVote->update(['vote_type' => $request->vote_type]);
+            if ($request->vote_type === 'up') {
+                $topic->increment('upvotes');
+                $topic->decrement('downvotes');
+            } else {
+                $topic->increment('downvotes');
+                $topic->decrement('upvotes');
+            }
         } else {
-            $topic->increment('downvotes');
+            TopicVote::create([
+                'topic_id' => $id,
+                'user_id' => $userId,
+                'vote_type' => $request->vote_type,
+            ]);
+            $request->vote_type === 'up' ? $topic->increment('upvotes') : $topic->increment('downvotes');
         }
 
         return response()->json(['message' => 'Vote recorded successfully']);
@@ -110,30 +219,38 @@ class ForumController extends Controller
             'vote_type' => 'required|in:up,down',
         ]);
 
+        $userId = Auth::id();
         $existingVote = CommentVote::where('comment_id', $id)
-            ->where('user_id', Auth::id())
+            ->where('user_id', $userId)
             ->first();
 
-        if ($existingVote) {
-            return response()->json(['message' => 'You already voted on this comment'], 400);
-        }
-
-        $vote = CommentVote::create([
-            'comment_id' => $id,
-            'user_id' => Auth::id(),
-            'vote_type' => $request->vote_type,
-        ]);
-
         $comment = Comment::findOrFail($id);
-        if ($request->vote_type === 'up') {
-            $comment->increment('upvotes');
+
+        if ($existingVote) {
+            if ($existingVote->vote_type === $request->vote_type) {
+                $existingVote->delete();
+                $request->vote_type === 'up' ? $comment->decrement('upvotes') : $comment->decrement('downvotes');
+                return response()->json(['message' => 'Vote removed successfully']);
+            }
+            $existingVote->update(['vote_type' => $request->vote_type]);
+            if ($request->vote_type === 'up') {
+                $comment->increment('upvotes');
+                $comment->decrement('downvotes');
+            } else {
+                $comment->increment('downvotes');
+                $comment->decrement('upvotes');
+            }
         } else {
-            $comment->increment('downvotes');
+            CommentVote::create([
+                'comment_id' => $id,
+                'user_id' => $userId,
+                'vote_type' => $request->vote_type,
+            ]);
+            $request->vote_type === 'up' ? $comment->increment('upvotes') : $comment->increment('downvotes');
         }
 
         return response()->json(['message' => 'Vote recorded successfully']);
     }
-
     public function deleteAdminTopic($id)
     {
         $topic = Topic::findOrFail($id);
