@@ -15,6 +15,10 @@ Route::middleware('sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::get('/route-endpoint', function () {
+    return file_get_contents(public_path('angular/index.html'));
+})->where('any', '.*');
+
 use App\Http\Controllers\SanctumTestController;
 Route::get('/sanctum/login', [SanctumTestController::class, 'showLoginForm'])->name('login');
 Route::post('/sanctum/login', [SanctumTestController::class, 'login']);
