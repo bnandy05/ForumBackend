@@ -1,4 +1,6 @@
 <?php
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ZeneController;
 use App\Http\Controllers\TestAPIController;
@@ -15,8 +17,12 @@ Route::middleware('sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/route-endpoint', function () {
-    return file_get_contents(public_path('angular/index.html'));
+Route::get('/{any}', function () {
+    $path = public_path('frontend/index.html');
+    if (File::exists($path)) {
+        return File::get($path);
+    }
+    return abort(404);
 })->where('any', '.*');
 
 use App\Http\Controllers\SanctumTestController;
