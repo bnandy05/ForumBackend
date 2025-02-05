@@ -1,6 +1,20 @@
+Header set Access-Control-Allow-Origin "*"
+
 <IfModule mod_rewrite.c>
     RewriteEngine On
+
+    # Engedélyezd az Authorization header-t
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    RewriteBase /
+
+    # Ha az útvonal az "/api" prefixszel kezdődik, ne irányítsd át az Angularra
+    RewriteCond %{REQUEST_URI} ^/api [NC]
+    RewriteRule ^ - [L]
+
+    # Ha létező fájl vagy könyvtár, ne irányítsd át
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule . /index.html [L]
+
+
 </IfModule>
