@@ -1,4 +1,5 @@
 <?php
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ForumController;
@@ -8,15 +9,15 @@ use App\Http\Controllers\SanctumTestController;
         return $request->user();
     });
 
-    // Teszt útvonal
     Route::get('/test', function () {
-        return response()->json(['message' => 'API működik!']);
+        return response()->json(['message' => 'Ez az API működik!']);
     });
 
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/logout', [AuthController::class, 'logout']);
     
+
     // Authentikációt igénylő útvonalak
     Route::middleware(['auth'])->group(function () {
         Route::controller(ForumController::class)->group(function () {
