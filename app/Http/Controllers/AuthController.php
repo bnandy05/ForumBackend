@@ -24,7 +24,7 @@ class AuthController extends Controller
         // Token generálása
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json('message' => "Sikeres regisztráció!", 200);
+        return response()->json(['message' => "Sikeres regisztráció!"], 200);
     }
 
     public function login(Request $request)
