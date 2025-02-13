@@ -3,45 +3,35 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ForumController;
-use App\Http\Controllers\SanctumTestController;
 
-    Route::middleware('sanctum')->get('/user', function (Request $request) {
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/logout', [AuthController::class, 'logout']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user', function (Request $request) {
         return $request->user();
     });
 
-    Route::get('/test', function () {
-        return response()->json(['message' => 'Ez az API működik!']);
+    Route::controller(ForumController::class)->group(function () {
+        Route::get('/user', 'userDetails')->name('user.reszletek');
+
+        Route::get('/forum/fooldal', 'index')->name('forum.fooldal');
+
+        Route::get('/forum/feltoltes', 'createTopic')->name('forum.feltoltes');
+        Route::post('/forum/feltoltes', 'createTopic')->name('forum.feltoltes.post');
+
+        Route::get('/forum/topik/{id}', 'show')->name('forum.topik.show');
+        Route::post('/forum/topik/{id}/komment', 'addComment')->name('forum.komment.hozzaadas');
+        Route::post('/forum/topik/{id}/vote', 'voteTopic')->name('forum.topik.vote');
+        
+        Route::post('/forum/komment/{id}/vote', 'voteComment')->name('forum.komment.vote');
+        Route::delete('/forum/topik/{id}', 'deleteTopic')->name('forum.topik.torles');
+        Route::delete('/forum/komment/{id}', 'deleteComment')->name('forum.komment.torles');
     });
 
-    Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/login', [AuthController::class, 'login']);
-    Route::post('/logout', [AuthController::class, 'logout']);
-    
-
-    // Authentikációt igénylő útvonalak
-    Route::middleware(['auth'])->group(function () {
-        Route::controller(ForumController::class)->group(function () {
-            Route::get('/forum/fooldal', 'index')->name('forum.fooldal');
-            
-            Route::get('/forum/feltoltes', 'createTopic')->name('forum.feltoltes');
-            Route::post('/forum/feltoltes', 'createTopic')->name('forum.feltoltes.post');
-            
-            Route::get('/forum/topik/{id}', 'show')->name('forum.topik.show');
-            
-            Route::post('/forum/topik/{id}/komment', 'addComment')->name('forum.komment.hozzaadas');
-            
-            Route::post('/forum/topik/{id}/vote', 'voteTopic')->name('forum.topik.vote');
-            
-            Route::post('/forum/komment/{id}/vote', 'voteComment')->name('forum.komment.vote');
-
-            Route::delete('/forum/topik/{id}', 'deleteTopic')->name('forum.topik.torles');
-
-            Route::delete('/forum/komment/{id}', 'deleteComment')->name('forum.komment.torles');
-
-            // Admin útvonalak
-            Route::middleware(['auth', 'admin'])->group(function () {
-                Route::delete('/forum/topik/admin/{id}', 'deleteAdminTopic')->name('forum.topik.torles');
-                Route::delete('/forum/komment/admin/{id}', 'deleteAdminComment')->name('forum.komment.torles');
-            });  
-        });
+    Route::middleware('admin')->group(function () {
+        Route::delete('/forum/topik/admin/{id}', [ForumController::class, 'deleteAdminTopic'])->name('forum.topik.torles.admin');
+        Route::delete('/forum/komment/admin/{id}', [ForumController::class, 'deleteAdminComment'])->name('forum.komment.torles.admin');
     });
+});

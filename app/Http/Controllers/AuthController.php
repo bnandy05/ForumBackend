@@ -51,7 +51,7 @@ class AuthController extends Controller
         return response()->json(['message' => 'Sikeres kijelentkezés']);
     }
 
-    public function user(Request $request)
+    public function userDetails(Request $request)
     {
         return response()->json($request->user());
     }
