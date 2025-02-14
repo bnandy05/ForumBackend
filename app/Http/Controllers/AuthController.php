@@ -62,6 +62,64 @@ class AuthController extends Controller
         return response()->json($request->user());
     }
 
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required|string',
+            'new_password' => 'required|string|min:8',
+        ]);
+
+        $user = $request->user();
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json(['message' => 'A jelenlegi jelszó nem megfelelő.'], 401);
+        }
+
+        $user->password = bcrypt($request->new_password);
+        $user->save();
+
+        return response()->json(['message' => 'A jelszó sikeresen megváltoztatva.'], 200);
+    }
+
+    public function forgotPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        $newPassword = Str::random(10);
+        $user->password = bcrypt($newPassword);
+        $user->save();
+
+        $to = $user->email;
+        $subject = 'Új jelszó';
+        $message = $this->getPasswordResetEmailContent($user->name, $newPassword);
+        $headers = $this->getEmailHeaders();
+
+        mail($to, $subject, $message, $headers);
+
+        return response()->json(['message' => 'Az új jelszót elküldtük az e-mail címedre.'], 200);
+    }
+
+    private function getPasswordResetEmailContent($name, $newPassword)
+    {
+        return "
+            <html>
+            <head>
+                <title>Új jelszó</title>
+            </head>
+            <body>
+                <h1>Kedves $name!</h1>
+                <p>Az új jelszavad: <strong>$newPassword</strong></p>
+                <p>Javasoljuk, hogy jelentkezz be, és változtasd meg a jelszavad a profilodban.</p>
+                <p><strong>Az oldal csapata</strong></p>
+            </body>
+            </html>
+        ";
+    }
+
     private function getWelcomeEmailContent($name)
     {
         return "

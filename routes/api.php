@@ -6,6 +6,7 @@ use App\Http\Controllers\ForumController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/password/forgot', [AuthController::class, 'forgotPassword']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -13,25 +14,27 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
 
+    Route::post('/password/change', [AuthController::class, 'changePassword']);
+
     Route::controller(ForumController::class)->group(function () {
 
-        Route::get('/forum/fooldal', 'index')->name('forum.fooldal');
+        Route::get('/forum/home', 'index')->name('forum.home');
 
-        Route::post('/forum/feltoltes', 'createTopic')->name('forum.feltoltes.post');
+        Route::post('/forum/upload', 'createTopic')->name('forum.upload.post');
 
-        Route::get('/forum/kategoriak', 'getCategories')->name('forum.categories');
+        Route::get('/forum/categories', 'getCategories')->name('forum.categories');
 
-        Route::get('/forum/topik/{id}', 'show')->name('forum.topik.show');
-        Route::post('/forum/topik/{id}/komment', 'addComment')->name('forum.komment.hozzaadas');
-        Route::post('/forum/topik/{id}/vote', 'voteTopic')->name('forum.topik.vote');
+        Route::get('/forum/topic/{id}', 'show')->name('forum.topic.show');
+        Route::post('/forum/topic/{id}/comment', 'addComment')->name('forum.comment.hozzaadas');
+        Route::post('/forum/topic/{id}/vote', 'voteTopic')->name('forum.topic.vote');
         
-        Route::post('/forum/komment/{id}/vote', 'voteComment')->name('forum.komment.vote');
-        Route::delete('/forum/topik/{id}', 'deleteTopic')->name('forum.topik.torles');
-        Route::delete('/forum/komment/{id}', 'deleteComment')->name('forum.komment.torles');
+        Route::post('/forum/comment/{id}/vote', 'voteComment')->name('forum.comment.vote');
+        Route::delete('/forum/topic/{id}', 'deleteTopic')->name('forum.topic.delete');
+        Route::delete('/forum/comment/{id}', 'deleteComment')->name('forum.comment.delete');
     });
 
     Route::middleware('admin')->group(function () {
-        Route::delete('/forum/topik/admin/{id}', [ForumController::class, 'deleteAdminTopic'])->name('forum.topik.torles.admin');
-        Route::delete('/forum/komment/admin/{id}', [ForumController::class, 'deleteAdminComment'])->name('forum.komment.torles.admin');
+        Route::delete('/forum/topic/admin/{id}', [ForumController::class, 'deleteAdminTopic'])->name('forum.topic.delete.admin');
+        Route::delete('/forum/comment/admin/{id}', [ForumController::class, 'deleteAdminComment'])->name('forum.comment.delete.admin');
     });
 });
