@@ -17,8 +17,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::get('/forum/fooldal', 'index')->name('forum.fooldal');
 
-        Route::get('/forum/feltoltes', 'createTopic')->name('forum.feltoltes');
         Route::post('/forum/feltoltes', 'createTopic')->name('forum.feltoltes.post');
+
+        Route::get('/forum/kategoriak', 'getCategories')->name('forum.categories');
 
         Route::get('/forum/topik/{id}', 'show')->name('forum.topik.show');
         Route::post('/forum/topik/{id}/komment', 'addComment')->name('forum.komment.hozzaadas');

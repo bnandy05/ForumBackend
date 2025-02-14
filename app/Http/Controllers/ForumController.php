@@ -59,6 +59,12 @@ class ForumController extends Controller
         return response()->json($topic);
     }
 
+    public function getCategories(Request $request)
+    {
+        $categories = Category::all();
+        return response()->json($categories);
+    }
+
     public function addComment(Request $request, $topicId)
     {
         $request->validate([
