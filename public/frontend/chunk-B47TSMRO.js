@@ -1,0 +1,1 @@
+import{Ha as i,Ia as n,Ma as p,va as o}from"./chunk-XER6BFA7.js";var s=class t{static \u0275fac=function(e){return new(e||t)};static \u0275cmp=o({type:t,selectors:[["app-topic-details"]],decls:2,vars:0,template:function(e,c){e&1&&(i(0,"p"),p(1,"topic-details works!"),n())},encapsulation:2})};export{s as TopicDetailsComponent};

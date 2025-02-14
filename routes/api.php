@@ -6,15 +6,14 @@ use App\Http\Controllers\ForumController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
-Route::post('/logout', [AuthController::class, 'logout']);
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
 
     Route::controller(ForumController::class)->group(function () {
-        Route::get('/user', 'userDetails')->name('user.reszletek');
 
         Route::get('/forum/fooldal', 'index')->name('forum.fooldal');
 
