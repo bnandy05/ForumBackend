@@ -31,7 +31,7 @@ class ForumController extends Controller
             $query->orderBy('created_at', 'desc');
         }
 
-        $topics = $query->with('user', 'category')->paginate(10);
+        $topics = $query->with('user:id,name', 'category')->paginate(10);
         return response()->json($topics);
     }
 
@@ -55,7 +55,7 @@ class ForumController extends Controller
 
     public function show($id)
     {
-        $topic = Topic::with(['comments.user', 'user', 'category'])->findOrFail($id);
+        $topic = Topic::with(['comments.user', 'user:id,name', 'category'])->findOrFail($id);
         return response()->json($topic);
     }
 
