@@ -21,8 +21,14 @@ class AuthController extends Controller
             'password' => bcrypt($validated['password']),
         ]);
 
-        // Token generálása
         $token = $user->createToken('auth_token')->plainTextToken;
+
+        $to = $user['email'];
+        $subject = 'Üdvözlünk az oldalunkon!';
+        $message = $this->getWelcomeEmailContent($user['name']);
+        $headers = $this->getEmailHeaders();
+
+        mail($to, $subject, $message, $headers);
 
         return response()->json(['message' => "Sikeres regisztráció!"], 200);
     }
@@ -54,5 +60,30 @@ class AuthController extends Controller
     public function userDetails(Request $request)
     {
         return response()->json($request->user());
+    }
+
+    private function getWelcomeEmailContent($name)
+    {
+        return "
+            <html>
+            <head>
+                <title>Üdvözlünk!</title>
+            </head>
+            <body>
+                <h1>Üdvözlünk, $name!</h1>
+                <p>Köszönjük, hogy regisztráltál az oldalunkra. Örömmel látunk a közösségünkben!</p>
+                <p>Kellemes időtöltést kívánunk!</p>
+                <p><strong>Az oldal csapata</strong></p>
+            </body>
+            </html>
+        ";
+    }
+
+    private function getEmailHeaders()
+    {
+        $headers = "MIME-Version: 1.0" . "\r\n";
+        $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
+        $headers .= 'From: FreeForum <noreply@FreeForum.com>' . "\r\n";
+        return $headers;
     }
 }
