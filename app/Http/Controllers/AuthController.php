@@ -89,7 +89,7 @@ class AuthController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        $newPassword = Str::random(10);
+        $newPassword = bin2hex(random_bytes(5));
         $user->password = bcrypt($newPassword);
         $user->save();
 
