@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 
 class AuthController extends Controller
@@ -66,7 +67,7 @@ class AuthController extends Controller
     {
         $request->validate([
             'current_password' => 'required|string',
-            'new_password' => 'required|string|min:8',
+            'new_password' => 'required|string|min:8|confirmed',
         ]);
 
         $user = $request->user();
@@ -80,6 +81,7 @@ class AuthController extends Controller
 
         return response()->json(['message' => 'A jelszó sikeresen megváltoztatva.'], 200);
     }
+
 
     public function forgotPassword(Request $request)
     {
