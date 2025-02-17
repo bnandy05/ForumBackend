@@ -22,6 +22,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::post('/forum/upload', 'createTopic')->name('forum.upload.post');
 
+        Route::get('/forum/my-topics', 'myTopics')->name('forum.my.topics');
+
         Route::get('/forum/categories', 'getCategories')->name('forum.categories');
 
         Route::get('/forum/topic/{id}', 'show')->name('forum.topic.show');

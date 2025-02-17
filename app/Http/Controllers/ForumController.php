@@ -27,9 +27,15 @@ class ForumController extends Controller
 
         if ($request->has('order_by') && $request->order_by === 'upvotes') {
             $query->orderBy('upvotes', 'desc');
-        } else {
+        } else if ($request->has('order_by') && $request->order_by === 'created_at'){
             $query->orderBy('created_at', 'desc');
+        }else if ($request->has('order_by') && $request->order_by === 'upvotes_asc'){
+            $query->orderBy('upvotes', 'asc');
         }
+        else{
+            $query->orderBy('created_at', 'asc');
+        }
+        
 
         $topics = $query->with('user:id,name', 'category')->paginate(10);
         return response()->json($topics);
@@ -51,6 +57,35 @@ class ForumController extends Controller
         ]);
 
         return response()->json(['message' => 'Topic created successfully', 'topic' => $topic]);
+    }
+
+    public function myTopics(Request $request)
+    {
+        $query = Topic::query();
+        $user = $request->user();
+
+        if ($request->has('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        if ($request->has('title')) {
+            $query->where('title', 'like', '%' . $request->title . '%');
+        }
+
+        if ($request->has('order_by') && $request->order_by === 'upvotes') {
+            $query->orderBy('upvotes', 'desc');
+        } else if ($request->has('order_by') && $request->order_by === 'created_at'){
+            $query->orderBy('created_at', 'desc');
+        }else if ($request->has('order_by') && $request->order_by === 'upvotes_asc'){
+            $query->orderBy('upvotes', 'asc');
+        }
+        else{
+            $query->orderBy('created_at', 'asc');
+        }
+        
+
+        $topics = $query->with('user:id,name', 'category')->where('user_id', $user->id)->paginate(10);
+        return response()->json($topics);
     }
 
     public function show($id)
