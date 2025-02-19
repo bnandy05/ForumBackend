@@ -13,9 +13,14 @@ use Illuminate\Support\Facades\Auth;
 
 class ForumController extends Controller
 {
-    public function index(Request $request)
+    public function getTopics(Request $request)
     {
         $query = Topic::query();
+
+        if ($request->has('my_topics') && $request->my_topics) {
+            $user = $request->user();
+            $query->where('user_id', $user->id);
+        }
 
         if ($request->has('category_id')) {
             $query->where('category_id', $request->category_id);
@@ -25,21 +30,28 @@ class ForumController extends Controller
             $query->where('title', 'like', '%' . $request->title . '%');
         }
 
-        if ($request->has('order_by') && $request->order_by === 'upvotes') {
-            $query->orderBy('upvotes', 'desc');
-        } else if ($request->has('order_by') && $request->order_by === 'created_at'){
-            $query->orderBy('created_at', 'desc');
-        }else if ($request->has('order_by') && $request->order_by === 'upvotes_asc'){
-            $query->orderBy('upvotes', 'asc');
-        }
-        else{
+        if ($request->has('order_by')) {
+            switch ($request->order_by) {
+                case 'upvotes':
+                    $query->orderByRaw('upvotes - downvotes DESC');
+                    break;
+                case 'upvotes_asc':
+                    $query->orderByRaw('upvotes - downvotes ASC');
+                    break;
+                case 'created_at':
+                    $query->orderBy('created_at', 'desc');
+                    break;
+                default:
+                    $query->orderBy('created_at', 'asc');
+            }
+        } else {
             $query->orderBy('created_at', 'asc');
         }
-        
 
         $topics = $query->with('user:id,name', 'category')->paginate(10);
         return response()->json($topics);
     }
+
 
     public function createTopic(Request $request)
     {
@@ -57,35 +69,6 @@ class ForumController extends Controller
         ]);
 
         return response()->json(['message' => 'Topic created successfully', 'topic' => $topic]);
-    }
-
-    public function myTopics(Request $request)
-    {
-        $query = Topic::query();
-        $user = $request->user();
-
-        if ($request->has('category_id')) {
-            $query->where('category_id', $request->category_id);
-        }
-
-        if ($request->has('title')) {
-            $query->where('title', 'like', '%' . $request->title . '%');
-        }
-
-        if ($request->has('order_by') && $request->order_by === 'upvotes') {
-            $query->orderBy('upvotes', 'desc');
-        } else if ($request->has('order_by') && $request->order_by === 'created_at'){
-            $query->orderBy('created_at', 'desc');
-        }else if ($request->has('order_by') && $request->order_by === 'upvotes_asc'){
-            $query->orderBy('upvotes', 'asc');
-        }
-        else{
-            $query->orderBy('created_at', 'asc');
-        }
-        
-
-        $topics = $query->with('user:id,name', 'category')->where('user_id', $user->id)->paginate(10);
-        return response()->json($topics);
     }
 
     public function show($id)

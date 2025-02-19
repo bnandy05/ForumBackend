@@ -18,7 +18,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::controller(ForumController::class)->group(function () {
 
-        Route::get('/forum/home', 'index')->name('forum.home');
+        Route::get('/forum/home', 'getTopics')->name('forum.home');
 
         Route::post('/forum/upload', 'createTopic')->name('forum.upload.post');
 
