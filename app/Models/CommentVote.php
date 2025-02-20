@@ -12,7 +12,8 @@ class CommentVote extends Model
     protected $fillable = [
         'comment_id',
         'user_id',
-        'vote_type'
+        'vote_type',
+        'topic_id'
     ];
 
     public function comment()
@@ -23,5 +24,10 @@ class CommentVote extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function topic()
+    {
+        return $this->belongsTo(Topic::class);
     }
 }

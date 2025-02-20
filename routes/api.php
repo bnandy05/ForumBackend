@@ -26,7 +26,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::get('/forum/categories', 'getCategories')->name('forum.categories');
 
-        Route::get('/forum/topic/{id}', 'show')->name('forum.topic.show');
+        Route::get('/forum/topic/{id}', 'getTopic')->name('forum.topic.getTopic');
         Route::post('/forum/topic/{id}/comment', 'addComment')->name('forum.comment.hozzaadas');
         Route::post('/forum/topic/{id}/vote', 'voteTopic')->name('forum.topic.vote');
         
