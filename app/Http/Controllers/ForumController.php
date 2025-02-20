@@ -53,8 +53,30 @@ class ForumController extends Controller
         }
 
         $topics = $query->with('user:id,name', 'category')->paginate(10);
-        return response()->json($topics);
+
+        $user = $request->user();
+        $userVotes = [];
+
+        if ($user) {
+            $topicIds = $topics->pluck('id')->toArray();
+
+            $votes = TopicVote::whereIn('topic_id', $topicIds)
+                ->where('user_id', $user->id)
+                ->get()
+                ->keyBy('topic_id');
+
+            $userVotes = collect($topicIds)->mapWithKeys(function ($topicId) use ($votes) {
+                return [$topicId => $votes->has($topicId) ? $votes[$topicId]->vote_type : null];
+            })->toArray();
+        }
+
+        return response()->json([
+            'topics' => $topics,
+            'user_votes' => $userVotes,
+        ]);
     }
+
+
 
 
     public function createTopic(Request $request)
@@ -76,39 +98,39 @@ class ForumController extends Controller
     }
 
     public function getTopic(Request $request, $id)
-{
-    $user = $request->user();
+    {
+        $user = $request->user();
 
-    $topic = Topic::with(['comments.user:id,name', 'user:id,name', 'category'])->findOrFail($id);
+        $topic = Topic::with(['comments.user:id,name', 'user:id,name', 'category'])->findOrFail($id);
 
-    $userVote = null;
-    if ($user) {
-        $vote = TopicVote::where('topic_id', $id)
-            ->where('user_id', $user->id)
-            ->first();
-        $userVote = $vote ? $vote->vote_type : null;
+        $userVote = null;
+        if ($user) {
+            $vote = TopicVote::where('topic_id', $id)
+                ->where('user_id', $user->id)
+                ->first();
+            $userVote = $vote ? $vote->vote_type : null;
+        }
+
+        $userCommentVotes = [];
+        if ($user) {
+            $commentIds = $topic->comments->pluck('id')->toArray();
+
+            $commentVotes = CommentVote::whereIn('comment_id', $commentIds)
+                ->where('user_id', $user->id)
+                ->get()
+                ->keyBy('comment_id');
+
+            $userCommentVotes = collect($commentIds)->mapWithKeys(function ($commentId) use ($commentVotes) {
+                return [$commentId => $commentVotes->has($commentId) ? $commentVotes[$commentId]->vote_type : null];
+            })->toArray();
+        }
+
+        return response()->json([
+            'topic' => $topic,
+            'user_vote' => $userVote,
+            'user_comment_votes' => $userCommentVotes,
+        ]);
     }
-
-    $userCommentVotes = [];
-    if ($user) {
-        $commentIds = $topic->comments->pluck('id')->toArray();
-
-        $commentVotes = CommentVote::whereIn('comment_id', $commentIds)
-            ->where('user_id', $user->id)
-            ->get()
-            ->keyBy('comment_id');
-
-        $userCommentVotes = collect($commentIds)->mapWithKeys(function ($commentId) use ($commentVotes) {
-            return [$commentId => $commentVotes->has($commentId) ? $commentVotes[$commentId]->vote_type : null];
-        })->toArray();
-    }
-
-    return response()->json([
-        'topic' => $topic,
-        'user_vote' => $userVote,
-        'user_comment_votes' => $userCommentVotes,
-    ]);
-}
 
 
     public function getCategories(Request $request)
