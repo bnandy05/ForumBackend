@@ -105,6 +105,17 @@ class AuthController extends Controller
         return response()->json(['message' => 'Az új jelszót elküldtük az e-mail címedre.'], 200);
     }
 
+    public function getProfile(Request $request, $id)
+    {
+        $user = User::select('id', 'name', 'created_at', 'avatar')->where('id', $id)->first();
+    
+        if (!$user) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
+        return response()->json($user);
+    }
+
     private function getPasswordResetEmailContent($name, $newPassword)
     {
         return "
