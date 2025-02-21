@@ -3,6 +3,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ForumController;
+use App\Http\Controllers\FileUploadController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -15,6 +16,10 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::post('/password/change', [AuthController::class, 'changePassword']);
+
+    Route::post('/avatar/upload', [FileUploadController::class, 'uploadAvatar']);
+
+    Route::post('/avatar/delete', [FileUploadController::class, 'deleteAvatar']);
 
     Route::controller(ForumController::class)->group(function () {
 

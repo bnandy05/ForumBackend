@@ -3,9 +3,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 class FileUpload extends Model
 {
-    protected $table = 'webshop';
+    protected $table = 'file_uploads';
     protected $primaryKey = 'id';
-    public $timestamps = false;
+    public $timestamps = true;
+
+    protected $fillable = [
+        'filename',
+        'path',
+        'user_id'
+    ];
 
     public function save(array $options=[])
     {

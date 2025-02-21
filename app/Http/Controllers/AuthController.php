@@ -60,7 +60,7 @@ class AuthController extends Controller
 
     public function userDetails(Request $request)
     {
-        return response()->json($request->user());
+        return response()->json($request->user()->with('file_uploads'));
     }
 
     public function changePassword(Request $request)

@@ -7,3 +7,8 @@ Route::get('frontend/{any?}', function () {
     return file_get_contents(public_path('frontend/index.html'));
 })->where('any', '.*');
 
+Route::get('', function()
+{
+    return redirect('/frontend');
+});
+
