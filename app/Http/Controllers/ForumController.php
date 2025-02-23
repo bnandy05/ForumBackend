@@ -324,16 +324,20 @@ class ForumController extends Controller
         return response()->json(['success' => 'Topic sikeresen törölve.'], 200);
     }
 
-    public function deleteComment($id)
+    public function deleteComment($commentId)
     {
-        $comment = Comment::findOrFail($id);
+        $comment = Comment::findOrFail($commentId);
 
-        if ($comment->user_id !== Auth::id() && !Auth::user()->is_admin) {
-            return response()->json(['error' => 'Nincs jogosultságod törölni ezt a kommentet.'], 403);
+        $userId = Auth::id();
+        $topic = Topic::findOrFail($comment->topic_id);
+
+        if ($comment->user_id !== $userId && $topic->user_id !== $userId) {
+            return response()->json(['message' => 'Nincs engedélyed törölni ezt a kommentet.'], 403);
         }
 
         $comment->delete();
 
-        return response()->json(['success' => 'Komment sikeresen törölve.'], 200);
+        return response()->json(['message' => 'A komment sikeresen törlődött!']);
     }
+
 }
