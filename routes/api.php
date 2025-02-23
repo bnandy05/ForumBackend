@@ -20,7 +20,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/avatar/upload', [FileUploadController::class, 'uploadAvatar']);
 
-    Route::post('/avatar/delete', [FileUploadController::class, 'deleteAvatar']);
+    Route::delete('/avatar/delete', [FileUploadController::class, 'deleteAvatar']);
 
     Route::controller(ForumController::class)->group(function () {
 
@@ -35,10 +35,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/forum/topic/{id}', 'getTopic')->name('forum.topic.getTopic');
         Route::post('/forum/topic/{id}/comment', 'addComment')->name('forum.comment.hozzaadas');
         Route::post('/forum/topic/{id}/vote', 'voteTopic')->name('forum.topic.vote');
+        Route::post('/forum/topic/{id}/modify', 'modifyTopic')->name('forum.topic.modfiy');
         
         Route::post('/forum/comment/{id}/vote', 'voteComment')->name('forum.comment.vote');
-        Route::delete('/forum/topic/{id}', 'deleteTopic')->name('forum.topic.delete');
-        Route::delete('/forum/comment/{id}', 'deleteComment')->name('forum.comment.delete');
+        Route::post('/forum/comment/{id}/modify', 'modifyComment')->name('forum.comment.modfiy');
+
+        Route::delete('/forum/topic/delete/{id}', 'deleteTopic')->name('forum.topic.delete');
+        Route::delete('/forum/comment/delete/{id}', 'deleteComment')->name('forum.comment.delete');
     });
 
     Route::middleware('admin')->group(function () {

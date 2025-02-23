@@ -97,6 +97,29 @@ class ForumController extends Controller
         return response()->json(['message' => 'Topic created successfully', 'topic' => $topic]);
     }
 
+    public function modifyTopic(Request $request, $id)
+    {
+        $request->validate([
+            'title' => 'required|max:255',
+            'content' => 'required',
+            'category_id' => 'required|exists:categories,id',
+        ]);
+
+        $topic = Topic::findOrFail($id);
+
+        if ($topic->user_id !== Auth::id()) {
+            return response()->json(['message' => 'You are not authorized to modify this topic.'], 403);
+        }
+
+        $topic->update([
+            'title' => $request->title,
+            'content' => $request->content,
+            'category_id' => $request->category_id,
+        ]);
+
+        return response()->json(['message' => 'Topic sikeresen frissítve']);
+    }
+
     public function getTopic(Request $request, $id)
     {
         $user = $request->user();
@@ -151,7 +174,26 @@ class ForumController extends Controller
             'user_id' => Auth::id(),
         ]);
 
-        return response()->json(['message' => 'Comment added successfully', 'comment' => $comment]);
+        return response()->json(['message' => 'Komment sikeresen hozzáadva']);
+    }
+
+    public function modifyComment(Request $request, $commentId)
+    {
+        $request->validate([
+            'content' => 'required',
+        ]);
+
+        $comment = Comment::findOrFail($commentId);
+
+        if ($comment->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Nincs engedély.'], 403);
+        }
+
+        $comment->update([
+            'content' => $request->content,
+        ]);
+
+        return response()->json(['message' => 'Komment sikeresen frissítve!', 'comment' => $comment]);
     }
 
     public function voteTopic(Request $request, $id)
@@ -164,7 +206,7 @@ class ForumController extends Controller
         $topic = Topic::find($id);
 
         if (!$topic) {
-            return response()->json(['message' => 'Topic not found'], 404);
+            return response()->json(['message' => 'Nem található a topic'], 404);
         }
 
         $existingVote = TopicVote::where('topic_id', $id)
@@ -175,7 +217,7 @@ class ForumController extends Controller
             if ($existingVote->vote_type === $request->vote_type) {
                 $existingVote->delete();
                 $this->updateVoteCount($topic);
-                return response()->json(['message' => 'Vote removed successfully']);
+                return response()->json(['message' => 'Szavazás sikeresen levéve']);
             }
 
             $existingVote->update(['vote_type' => $request->vote_type]);
@@ -188,7 +230,7 @@ class ForumController extends Controller
         }
 
         $this->updateVoteCount($topic);
-        return response()->json(['message' => 'Vote recorded successfully']);
+        return response()->json(['message' => 'Szavazás sikeresen leadva']);
     }
 
     private function updateVoteCount(Topic $topic)
@@ -209,7 +251,7 @@ class ForumController extends Controller
         $comment = Comment::find($id);
 
         if (!$comment) {
-            return response()->json(['message' => 'Comment not found'], 404);
+            return response()->json(['message' => 'Nem található a komment'], 404);
         }
 
         $existingVote = CommentVote::where('comment_id', $id)
@@ -220,7 +262,7 @@ class ForumController extends Controller
             if ($existingVote->vote_type === $request->vote_type) {
                 $existingVote->delete();
                 $this->updateCommentVoteCount($comment);
-                return response()->json(['message' => 'Vote removed successfully']);
+                return response()->json(['message' => 'Szavazás sikeresen levéve!']);
             }
 
             $existingVote->update(['vote_type' => $request->vote_type]);
@@ -234,10 +276,10 @@ class ForumController extends Controller
         }
 
         $this->updateCommentVoteCount($comment);
-        return response()->json(['message' => 'Vote recorded successfully']);
+        return response()->json(['message' => 'Szavazás sikeresen leadva!']);
     }
 
-private function updateCommentVoteCount(Comment $comment)
+    private function updateCommentVoteCount(Comment $comment)
     {
         $comment->upvotes = CommentVote::where('comment_id', $comment->id)->where('vote_type', 'up')->count();
         $comment->downvotes = CommentVote::where('comment_id', $comment->id)->where('vote_type', 'down')->count();
@@ -251,10 +293,10 @@ private function updateCommentVoteCount(Comment $comment)
 
         if (Auth::user()->is_admin || Auth::id() === $topic->user_id) {
             $topic->delete();
-            return response()->json(['message' => 'Topic deleted successfully']);
+            return response()->json(['message' => 'Topic sikeresen törölve!']);
         }
 
-        return response()->json(['message' => 'Unauthorized'], 403);
+        return response()->json(['message' => 'Nem engedélyezett'], 403);
     }
 
     public function deleteAdminComment($id)
@@ -263,23 +305,23 @@ private function updateCommentVoteCount(Comment $comment)
 
         if (Auth::user()->is_admin || Auth::id() === $comment->user_id) {
             $comment->delete();
-            return response()->json(['message' => 'Comment deleted successfully']);
+            return response()->json(['message' => 'Komment sikeresen törölve']);
         }
 
-        return response()->json(['message' => 'Unauthorized'], 403);
+        return response()->json(['message' => 'Nem engedélyezett'], 403);
     }
     
     public function deleteTopic($id)
     {
         $topic = Topic::findOrFail($id);
 
-        if ($topic->user_id !== Auth::id() && !Auth::user()->is_admin) {
-            return response()->json(['error' => 'Nincs jogosultságod törölni ezt a topikot.'], 403);
+        if ($topic->user_id !== Auth::id()) {
+            return response()->json(['error' => 'Nincs jogosultságod törölni ezt a topicot.'], 403);
         }
 
         $topic->delete();
 
-        return response()->json(['success' => 'Topik sikeresen törölve.'], 200);
+        return response()->json(['success' => 'Topic sikeresen törölve.'], 200);
     }
 
     public function deleteComment($id)

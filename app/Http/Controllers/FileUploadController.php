@@ -39,7 +39,7 @@ class FileUploadController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'Avatar uploaded successfully',
+            'message' => 'Avatar sikeresen feltöltve',
             'avatar' => asset('storage/' . $path),
             'file_upload' => $fileUpload,
         ], 201);
@@ -50,7 +50,7 @@ class FileUploadController extends Controller
         $user = User::find($userId);
 
         if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
+            return response()->json(['message' => 'Nem található a felhasználó'], 404);
         }
 
         if ($user->avatar) {
@@ -64,9 +64,9 @@ class FileUploadController extends Controller
 
             FileUpload::where('user_id', $userId)->delete();
 
-            return response()->json(['message' => 'Avatar deleted successfully']);
+            return response()->json(['message' => 'Avatar sikeresen törölve']);
         }
 
-        return response()->json(['message' => 'No avatar to delete'], 404);
+        return response()->json(['message' => 'Nincs avatar'], 404);
     }
 }
