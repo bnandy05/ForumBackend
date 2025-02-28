@@ -5,6 +5,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use App\Models\Users;
+use App\Models\Category;
+use App\Models\Topic;
+use App\Models\Comment;
+use App\Models\TopicVote;
+use App\Models\CommentVote;
 
 class AuthController extends Controller
 {
@@ -60,7 +66,36 @@ class AuthController extends Controller
 
     public function userDetails(Request $request)
     {
-        return response()->json($request->user()->with('file_uploads'));
+        $user = $request->user();
+
+        $topics = Topic::where('user_id', $user->id)->get();
+        $topicCount = $topics->count();
+
+        $topicUpvotes = $topics->sum('upvotes');
+        $topicDownvotes = $topics->sum('downvotes');
+
+        $comments = Comment::where('user_id', $user->id)->get();
+        $commentCount = $comments->count();
+
+        $commentUpvotes = $comments->sum('upvotes');
+        $commentDownvotes = $comments->sum('downvotes');
+
+        $stats = [
+            'topic_count' => $topicCount,
+            'comment_count' => $commentCount,
+            'topic_upvotes' => $topicUpvotes,
+            'topic_downvotes' => $topicDownvotes,
+            'comment_upvotes' => $commentUpvotes,
+            'comment_downvotes' => $commentDownvotes,
+            'total_upvotes' => $topicUpvotes + $commentUpvotes,
+            'total_downvotes' => $topicDownvotes + $commentDownvotes,
+            'total_votes_balance' => ($topicUpvotes + $commentUpvotes) - ($topicDownvotes + $commentDownvotes)
+        ];
+
+        $userData = $user->toArray();
+        $userData['stats'] = $stats;
+        
+        return response()->json($userData);
     }
 
     public function changePassword(Request $request)
@@ -113,7 +148,34 @@ class AuthController extends Controller
             return response()->json(['error' => 'User not found'], 404);
         }
 
-        return response()->json($user);
+        $topics = Topic::where('user_id', $user->id)->get();
+        $topicCount = $topics->count();
+
+        $topicUpvotes = $topics->sum('upvotes');
+        $topicDownvotes = $topics->sum('downvotes');
+
+        $comments = Comment::where('user_id', $user->id)->get();
+        $commentCount = $comments->count();
+
+        $commentUpvotes = $comments->sum('upvotes');
+        $commentDownvotes = $comments->sum('downvotes');
+
+        $stats = [
+            'topic_count' => $topicCount,
+            'comment_count' => $commentCount,
+            'topic_upvotes' => $topicUpvotes,
+            'topic_downvotes' => $topicDownvotes,
+            'comment_upvotes' => $commentUpvotes,
+            'comment_downvotes' => $commentDownvotes,
+            'total_upvotes' => $topicUpvotes + $commentUpvotes,
+            'total_downvotes' => $topicDownvotes + $commentDownvotes,
+            'total_votes_balance' => ($topicUpvotes + $commentUpvotes) - ($topicDownvotes + $commentDownvotes)
+        ];
+
+        $userData = $user->toArray();
+        $userData['stats'] = $stats;
+        
+        return response()->json($userData);
     }
 
     private function getPasswordResetEmailContent($name, $newPassword)

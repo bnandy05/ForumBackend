@@ -8,13 +8,17 @@ use Illuminate\Database\Eloquent\Model;
 class Comment extends Model
 {
     use HasFactory;
+    
+    public $timestamps = false;
 
     protected $fillable = [
         'content',
         'topic_id',
         'user_id',
         'upvotes',
-        'downvotes'
+        'downvotes',
+        'created_at',
+        'updated_at'
     ];
 
     public function user()

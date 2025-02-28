@@ -42,6 +42,7 @@ class FileUploadController extends Controller
             'message' => 'Avatar sikeresen feltöltve',
             'avatar' => asset('storage/' . $path),
             'file_upload' => $fileUpload,
+            'url' => $path
         ], 201);
     }
 

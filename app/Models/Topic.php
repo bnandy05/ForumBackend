@@ -9,13 +9,17 @@ class Topic extends Model
 {
     use HasFactory;
 
+    public $timestamps = false;
+
     protected $fillable = [
         'title',
         'content',
         'category_id',
         'user_id',
         'upvotes',
-        'downvotes'
+        'downvotes',
+        'created_at',
+        'updated_at'
     ];
 
     public function user()

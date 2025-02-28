@@ -87,12 +87,16 @@ class ForumController extends Controller
             'category_id' => 'required|exists:categories,id',
         ]);
 
-        $topic = Topic::create([
+        $topic = new Topic([
             'title' => $request->title,
             'content' => $request->content,
             'category_id' => $request->category_id,
             'user_id' => Auth::id(),
+            'created_at' => now(),
+            'updated_at' => now()
         ]);
+
+        $topic->save();
 
         return response()->json(['message' => 'Topic created successfully', 'topic' => $topic]);
     }
@@ -115,6 +119,7 @@ class ForumController extends Controller
             'title' => $request->title,
             'content' => $request->content,
             'category_id' => $request->category_id,
+            'updated_at' => now()
         ]);
 
         return response()->json(['message' => 'Topic sikeresen frissítve']);
@@ -172,9 +177,11 @@ class ForumController extends Controller
             'content' => $request->content,
             'topic_id' => $topicId,
             'user_id' => Auth::id(),
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
-        return response()->json(['message' => 'Komment sikeresen hozzáadva']);
+        return response()->json(['message' => 'Komment sikeresen hozzáadva', 'comment' => $comment]);
     }
 
     public function modifyComment(Request $request, $commentId)
@@ -191,6 +198,7 @@ class ForumController extends Controller
 
         $comment->update([
             'content' => $request->content,
+            'updated_at' => now()
         ]);
 
         return response()->json(['message' => 'Komment sikeresen frissítve!', 'comment' => $comment]);
@@ -204,7 +212,7 @@ class ForumController extends Controller
 
         $user = $request->user();
         $topic = Topic::find($id);
-
+        
         if (!$topic) {
             return response()->json(['message' => 'Nem található a topic'], 404);
         }
@@ -233,12 +241,14 @@ class ForumController extends Controller
         return response()->json(['message' => 'Szavazás sikeresen leadva']);
     }
 
+
     private function updateVoteCount(Topic $topic)
     {
         $topic->upvotes = TopicVote::where('topic_id', $topic->id)->where('vote_type', 'up')->count();
         $topic->downvotes = TopicVote::where('topic_id', $topic->id)->where('vote_type', 'down')->count();
         $topic->save();
     }
+
 
 
     public function voteComment(Request $request, $id)
