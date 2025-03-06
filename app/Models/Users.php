@@ -9,6 +9,13 @@ class Users extends Model
     protected $primaryKey = 'id';
 
     public $timestamps = false;
+    
+
+    protected $fillable = [
+        'is_banned',
+        'is_admin',
+        'password'
+    ];
 
     public function save(array $options=[])
     {

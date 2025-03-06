@@ -45,29 +45,4 @@ class FileUploadController extends Controller
             'url' => $path
         ], 201);
     }
-
-    public function deleteAvatar($userId)
-    {
-        $user = User::find($userId);
-
-        if (!$user) {
-            return response()->json(['message' => 'Nem található a felhasználó'], 404);
-        }
-
-        if ($user->avatar) {
-            
-            if (Storage::disk('public')->exists($user->avatar)) {
-                Storage::disk('public')->delete($user->avatar);
-            }
-
-            $user->avatar = null;
-            $user->save();
-
-            FileUpload::where('user_id', $userId)->delete();
-
-            return response()->json(['message' => 'Avatar sikeresen törölve']);
-        }
-
-        return response()->json(['message' => 'Nincs avatar'], 404);
-    }
 }

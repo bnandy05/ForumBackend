@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ForumController;
 use App\Http\Controllers\FileUploadController;
+use App\Http\Controllers\AdminController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -45,7 +46,21 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::middleware('admin')->group(function () {
-        Route::delete('/forum/topic/admin/{id}', [ForumController::class, 'deleteAdminTopic'])->name('forum.topic.delete.admin');
-        Route::delete('/forum/comment/admin/{id}', [ForumController::class, 'deleteAdminComment'])->name('forum.comment.delete.admin');
+        Route::controller(AdminController::class)->group(function () {
+            Route::post('/forum/admin/user/ban', 'banUser')->name('admin.user.ban');
+            Route::post('/forum/admin/user/unban', 'unbanUser')->name('admin.user.unban');
+
+            Route::post('/forum/admin/user/admin/give', 'makeAdmin')->name('admin.user.give.admin');
+            Route::post('/forum/admin/user/admin/revoke', 'revokeAdmin')->name('admin.user.revoke.admin');
+
+            Route::delete('/forum/admin/user/delete/{id}', 'deleteUser')->name('admin.user.delete');
+
+            Route::delete('/forum/admin/topic/delete/{id}', 'deleteTopic')->name('admin.topic.delete');
+            Route::delete('/forum/admin/comment/delete/{id}', 'deleteComment')->name('admin.comment.delete');
+
+            Route::post('/forum/admin/category/upload', 'categoryUpload')->name('admin.category.upload');
+
+            Route::get('/forum/admin/users/get', 'getUsers')->name('admin.users.get');
+        });
     });
 });

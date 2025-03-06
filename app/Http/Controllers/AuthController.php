@@ -48,10 +48,16 @@ class AuthController extends Controller
         ]);
 
         if (!Auth::attempt($credentials)) {
-            return response()->json(['message' => 'Hibás bejelentkezési adatok'], 401);
+            return response()->json(['message' => 'Hibás bejelentkezési adatok.'], 401);
         }
 
         $user = Auth::user();
+
+        if  ($user->is_banned=="1")
+        {
+            return response()->json(['message' => 'A fiók ki lett tiltva.'], 401);
+        }
+        
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json(['token' => $token, 'user' => $user]);
