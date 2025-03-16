@@ -148,7 +148,7 @@ class AuthController extends Controller
 
     public function getProfile(Request $request, $id)
     {
-        $user = User::select('id', 'name', 'created_at', 'avatar')->where('id', $id)->first();
+        $user = User::select('id', 'name', 'created_at', 'avatar', 'is_banned')->where('id', $id)->first();
     
         if (!$user) {
             return response()->json(['error' => 'User not found'], 404);

@@ -52,7 +52,7 @@ class ForumController extends Controller
             $query->orderBy('created_at', 'asc');
         }
 
-        $topics = $query->with('user:id,name,avatar', 'category')->withCount('comments')->paginate(10);
+        $topics = $query->with('user:id,name,avatar', 'category')->whereHas('user', function ($q) {$q->where('is_banned', 0);})->withCount('comments')->paginate(10);
 
         $user = $request->user();
         $userVotes = [];
@@ -75,9 +75,6 @@ class ForumController extends Controller
             'user_votes' => $userVotes,
         ]);
     }
-
-
-
 
     public function createTopic(Request $request)
     {
@@ -129,7 +126,20 @@ class ForumController extends Controller
     {
         $user = $request->user();
 
-        $topic = Topic::with(['comments.user:id,name,avatar', 'user:id,name,avatar', 'category'])->findOrFail($id);
+        $topic = Topic::whereHas('user', function ($q) {
+            $q->where('is_banned', 0);
+        })
+        ->with([
+            'user:id,name,avatar',
+            'category',
+            'comments' => function ($q) {
+                $q->whereHas('user', function ($q) {
+                    $q->where('is_banned', 0);
+                });
+            },
+            'comments.user:id,name,avatar'
+        ])
+        ->findOrFail($id);
 
         $userVote = null;
         if ($user) {

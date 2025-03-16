@@ -17,7 +17,11 @@ class AdminController extends Controller
         $user = Users::find($request->id);
         if ($user) {
             $user->is_banned = 1;
-            $token = PersonalAccessToken::where('tokenable_id', $user->id)->first()->delete();
+            $token = PersonalAccessToken::where('tokenable_id', $user->id)->first();
+            if($token)
+            {
+                $token->delete();
+            }
             $user->save();
             return response()->json(['message' => 'A felhasználó sikeresen letiltva!'], 200);
         }
@@ -39,7 +43,11 @@ class AdminController extends Controller
     {
         $user = Users::find($id);
         if ($user) {
-            $token = PersonalAccessToken::where('tokenable_id', $user->id)->first()->delete();
+            $token = PersonalAccessToken::where('tokenable_id', $user->id)->first();
+            if($token)
+            {
+                $token->delete();
+            }
             $user->delete();
             return response()->json(['message' => 'A felhasználó sikeresen törölve'], 200);
         }
@@ -84,7 +92,11 @@ class AdminController extends Controller
         $user = Users::find($request->id);
         if ($user) {
             $user->is_admin = 1;
-            $token = PersonalAccessToken::where('tokenable_id', $user->id)->first()->delete();
+            $token = PersonalAccessToken::where('tokenable_id', $user->id)->first();
+            if($token)
+            {
+                $token->delete();
+            }
             $user->save();
             return response()->json(['message' => 'A felhasználó sikeresen admin lett!'], 200);
         }
@@ -95,7 +107,11 @@ class AdminController extends Controller
     {
         $user = Users::find($request->id);
         if ($user) {
-            $token = PersonalAccessToken::where('tokenable_id', $user->id)->first()->delete();
+            $token = PersonalAccessToken::where('tokenable_id', $user->id)->first();
+            if($token)
+            {
+                $token->delete();
+            }
             $user->is_admin = 0;
             $user->save();
             return response()->json(['message' => 'Az admin jog sikeresen el lett véve!'], 200);
@@ -103,10 +119,24 @@ class AdminController extends Controller
         return response()->json(['message' => 'A felhasználó nem található'], 404);
     }
 
-    public function getUsers()
+    public function getUsers(Request $request)
     {
-        $users = Users::select('id', 'name', 'avatar', 'email', 'is_admin', 'is_banned')->paginate(10);
-
+        $request->validate([
+            'name' => 'nullable|string',
+        ]);
+    
+        $query = Users::select('id', 'name', 'avatar', 'email', 'is_admin', 'is_banned');
+    
+        if ($request->has('name') && $request->name) {
+            $name = $request->name;
+            $query->where(function($q) use ($name) {
+                $q->where('name', 'like', '%' . $name . '%')
+                  ->orWhere('email', 'like', '%' . $name . '%');
+            });
+        }
+    
+        $users = $query->paginate(10);
+    
         return response()->json(['users' => $users], 200);
     }
 }

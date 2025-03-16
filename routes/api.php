@@ -60,7 +60,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
             Route::post('/forum/admin/category/upload', 'categoryUpload')->name('admin.category.upload');
 
-            Route::get('/forum/admin/users/get', 'getUsers')->name('admin.users.get');
+            Route::post('/forum/admin/users/get', 'getUsers')->name('admin.users.get');
         });
     });
 });
