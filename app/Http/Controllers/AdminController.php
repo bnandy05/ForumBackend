@@ -74,7 +74,7 @@ class AdminController extends Controller
         return response()->json(['message' => 'A hozzászólás nem található'], 404);
     }
 
-    public function categoryUpload(Request $request)
+    public function uploadCategory(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
@@ -85,6 +85,36 @@ class AdminController extends Controller
         $category->save();
 
         return response()->json(['message' => 'A kategória sikeresen feltöltve'], 201);
+    }
+
+    public function getCategories()
+    {
+        $categories = Category::where('permanent','0')->get();
+        
+        return response()->json([
+            'categories' => $categories
+        ]);
+    }
+
+    public function deleteCategory($id)
+    {
+        $category = Category::find($id);
+        
+        if (!$category) {
+            return response()->json(['message' => 'A kategória nem található'], 404);
+        }
+        
+        if($category->permanent == 0)
+        {
+            $category->delete();
+        }
+        else
+        {
+            return response()->json(['message' => 'Nem törölhetsz állandó kategóriákat'], 404);
+        }
+        
+        
+        return response()->json(['message' => 'A kategória sikeresen törölve']);
     }
 
     public function makeAdmin(Request $request)
@@ -123,20 +153,37 @@ class AdminController extends Controller
     {
         $request->validate([
             'name' => 'nullable|string',
+            'banned' => 'nullable|integer',
+            'admin' => 'nullable|integer'
         ]);
-    
-        $query = Users::select('id', 'name', 'avatar', 'email', 'is_admin', 'is_banned');
-    
-        if ($request->has('name') && $request->name) {
-            $name = $request->name;
-            $query->where(function($q) use ($name) {
-                $q->where('name', 'like', '%' . $name . '%')
-                  ->orWhere('email', 'like', '%' . $name . '%');
-            });
+
+        $query = Users::select('id', 'name', 'avatar', 'email', 'is_admin', 'is_banned');    
+
+        if ($request->filled('banned')) {
+            $query->where('is_banned', $request->banned);
         }
-    
+        
+        if ($request->filled('admin')) {
+            $query->where('is_admin', $request->admin);
+        }
+
+        if ($request->filled('name') && !empty($request->name)) { 
+            $name = $request->name;
+            $query->where(function ($q) use ($name) {
+                $q->where('name', 'like', "%$name%")
+                  ->orWhere('email', 'like', "%$name%");
+            });
+        }    
+
         $users = $query->paginate(10);
-    
+
         return response()->json(['users' => $users], 200);
+    }
+
+    public function getUser($id)
+    {
+        $query = Users::find($id);    
+
+        return response()->json(['user' => $query], 200);
     }
 }

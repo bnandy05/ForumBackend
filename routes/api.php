@@ -58,9 +58,13 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::delete('/forum/admin/topic/delete/{id}', 'deleteTopic')->name('admin.topic.delete');
             Route::delete('/forum/admin/comment/delete/{id}', 'deleteComment')->name('admin.comment.delete');
 
-            Route::post('/forum/admin/category/upload', 'categoryUpload')->name('admin.category.upload');
+            Route::post('/forum/admin/categories/get', 'getCategories')->name('admin.category.get');
+            Route::post('/forum/admin/category/upload', 'uploadCategory')->name('admin.category.upload');
+            Route::delete('/forum/admin/category/delete/{id}', 'deleteCategory')->name('admin.category.delete');
 
             Route::post('/forum/admin/users/get', 'getUsers')->name('admin.users.get');
+
+            Route::post('/forum/admin/users/get/{id}', 'getUser')->name('admin.user.get');
         });
     });
 });
