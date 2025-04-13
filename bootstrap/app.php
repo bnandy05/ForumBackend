@@ -24,7 +24,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'auth' => \App\Http\Middleware\Authenticate::class,
             'sanctum' => \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-            'admin' => \App\Http\Middleware\AdminMiddleware::class
+            'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'not_banned' => \App\Http\Middleware\BannedMiddleware::class
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

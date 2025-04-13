@@ -7,6 +7,7 @@ use App\Models\FileUpload;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+date_default_timezone_set("europe/budapest");
 
 class FileUploadController extends Controller
 {

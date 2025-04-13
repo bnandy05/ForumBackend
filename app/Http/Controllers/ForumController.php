@@ -10,6 +10,7 @@ use App\Models\TopicVote;
 use App\Models\CommentVote;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+date_default_timezone_set("europe/budapest");
 
 class ForumController extends Controller
 {

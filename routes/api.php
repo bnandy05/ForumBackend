@@ -10,9 +10,9 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/password/forgot', [AuthController::class, 'forgotPassword']);
 
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/logout', [AuthController::class, 'logout']);
+Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
+Route::middleware('auth:sanctum', 'not_banned')->group(function () {
     Route::post('/my-details', [AuthController::class, 'userDetails']);
 
     Route::post('/user/{id}', [AuthController::class, 'getProfile']);
