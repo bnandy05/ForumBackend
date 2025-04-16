@@ -72,48 +72,50 @@ class AuthController extends Controller
     }
 
     public function userDetails(Request $request)
-{
-    $user = $request->user();
+    {
+        $user = $request->user();
 
-    $topics = Topic::where('user_id', $user->id)->get();
-    $topicCount = $topics->count();
+        $topics = Topic::where('user_id', $user->id)->get();
+        $topicCount = $topics->count();
 
-    $topicVotes = TopicVote::whereIn('topic_id', $topics->pluck('id'))
-        ->where('user_id', '!=', $user->id)
-        ->get();
-    $topicUpvotes = $topicVotes->where('vote_type', 'up')->count();
-    $topicDownvotes = $topicVotes->where('vote_type', 'down')->count();
+        $topicVotes = TopicVote::whereIn('topic_id', $topics->pluck('id'))
+            ->where('user_id', '!=', $user->id)
+            ->get();
+        $topicUpvotes = $topicVotes->where('vote_type', 'up')->count();
+        $topicDownvotes = $topicVotes->where('vote_type', 'down')->count();
 
-    $comments = Comment::where('user_id', $user->id)->get();
-    $commentCount = $comments->count();
+        $comments = Comment::where('user_id', $user->id)->get();
+        $commentCount = $comments->count();
 
-    $commentVotes = CommentVote::whereIn('comment_id', $comments->pluck('id'))
-        ->where('user_id', '!=', $user->id)
-        ->get();
-    $commentUpvotes = $commentVotes->where('vote_type', 'up')->count();
-    $commentDownvotes = $commentVotes->where('vote_type', 'down')->count();
+        $commentVotes = CommentVote::whereIn('comment_id', $comments->pluck('id'))
+            ->where('user_id', '!=', $user->id)
+            ->get();
+        $commentUpvotes = $commentVotes->where('vote_type', 'up')->count();
+        $commentDownvotes = $commentVotes->where('vote_type', 'down')->count();
 
-    $stats = [
-        'topic_count' => $topicCount,
-        'comment_count' => $commentCount,
-        'topic_upvotes' => $topicUpvotes,
-        'topic_downvotes' => $topicDownvotes,
-        'comment_upvotes' => $commentUpvotes,
-        'comment_downvotes' => $commentDownvotes,
-        'total_upvotes' => $topicUpvotes + $commentUpvotes,
-        'total_downvotes' => $topicDownvotes + $commentDownvotes,
-        'total_votes_balance' => ($topicUpvotes + $commentUpvotes) - ($topicDownvotes + $commentDownvotes)
-    ];
+        $stats = [
+            'topic_count' => $topicCount,
+            'comment_count' => $commentCount,
+            'topic_upvotes' => $topicUpvotes,
+            'topic_downvotes' => $topicDownvotes,
+            'comment_upvotes' => $commentUpvotes,
+            'comment_downvotes' => $commentDownvotes,
+            'total_upvotes' => $topicUpvotes + $commentUpvotes,
+            'total_downvotes' => $topicDownvotes + $commentDownvotes,
+            'total_votes_balance' => ($topicUpvotes + $commentUpvotes) - ($topicDownvotes + $commentDownvotes)
+        ];
 
-    $userData = [
-        'id' => $user->id,
-        'name' => $user->name,
-        'avatar' => $user->avatar,
-        'stats' => $stats
-    ];
-    
-    return response()->json($userData);
-}
+        $userData = [
+            'id' => $user->id,
+            'name' => $user->name,
+            'avatar' => $user->avatar,
+            'email' => $user->email,
+            'created_at' => $user->created_at,
+            'stats' => $stats
+        ];
+        
+        return response()->json($userData);
+    }
 
     public function changePassword(Request $request)
     {
@@ -125,7 +127,7 @@ class AuthController extends Controller
         $user = $request->user();
 
         if (!Hash::check($request->current_password, $user->password)) {
-            return response()->json(['message' => 'A jelenlegi jelszó nem megfelelő.'], 401);
+            return response()->json(['message' => 'A jelenlegi jelszó nem megfelelő.'], 403);
         }
 
         $user->password = bcrypt($request->new_password);
@@ -142,6 +144,7 @@ class AuthController extends Controller
 
         return response()->json(['message' => 'A jelszó sikeresen megváltoztatva.'], 200);
     }
+
 
 
     public function forgotPassword(Request $request)
@@ -171,7 +174,7 @@ class AuthController extends Controller
         $user = User::select('id', 'name', 'created_at', 'avatar', 'is_banned')->where('id', $id)->first();
     
         if (!$user) {
-            return response()->json(['error' => 'User not found'], 404);
+            return response()->json(['error' => 'Felhasználó nem található'], 404);
         }
 
         $topics = Topic::where('user_id', $user->id)->get();

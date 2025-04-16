@@ -18,12 +18,12 @@ class FileUploadController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json(['errors' => "A fájl nem lehet nagyobb 2MB-nál"], 422);
         }
 
         $user = $request->user();
 
-        if ($user->avatar) {
+        if ($user->avatar && $user->avatar!="Default.png") {
             Storage::disk('public')->delete($user->avatar);
         }
 
